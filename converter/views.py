@@ -9,15 +9,17 @@ import locale
 
 def init(request):
     # connection with Airtable
-    airtable = Airtable(base_key, 'Table 1', api_key)
+    airtable = Airtable(base_key, 'previous_courses_data', api_key)
     # data processing
     template = get_template('diploma.html')
     for script in airtable.get_all():
-        if script['fields']['Допуск'] == 'True':
-            name = script['fields']['Имя']
-            surname = script['fields']['Фамилия']
-            date = script['fields']['Дата']
-            date = datetime.strptime(date, "%Y-%m-%d")
+        is_project = script['fields'].get('is_project', None)
+        current_course = script['fields'].get('course', None)
+        if is_project == True and current_course == '16':
+            name = script['fields']['first_name']
+            surname = script['fields']['last_name']
+            date = script['createdTime']
+            date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%fZ")
             locale.setlocale(locale.LC_TIME, "ru_RU")
             date = datetime.strftime(date, "%d %B %Y")
             html = render(request, 'diploma.html', {'name': name, 'surname': surname, 'date': date})
